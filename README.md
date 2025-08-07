@@ -1,7 +1,7 @@
-# Educational Learning App - Requirements Canvas
+# CogniQuest - Requirements
 
 ## 🎯 Vision Statement
-An AI-powered educational platform that provides personalized learning experiences through intelligent tutoring, adaptive assessments, and comprehensive progress tracking for K-12 students.
+CogniQuest is an AI-powered educational platform that provides personalized learning experiences through intelligent tutoring, adaptive assessments, and comprehensive progress tracking for K-12 students.
 
 ## 👥 Target Users
 - **Primary**: K-12 students (ages 5-18)
