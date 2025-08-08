@@ -101,7 +101,39 @@ Deliver a functional learning platform that demonstrates core AI-powered educati
 - Basic text matching for scoring
 - Image storage for submissions
 
-### 6. User Management & Content System
+### 7. Student Chat Interface with Lesson Content
+**Description**: Interactive chat interface with side-by-side lesson content viewing.
+
+**User Stories**:
+- As a student, I can select a lesson and view its content alongside a chat window
+- As a student, I can ask questions about the lesson while reading the material
+- As a student, I can switch between different lesson files while maintaining chat context
+- As a student, I can use the interface on different screen sizes (responsive design)
+
+**Technical Requirements**:
+- Split-screen responsive layout (book view + chat window)
+- PDF/document viewer integration
+- Real-time chat with lesson context
+- Mobile-responsive design with collapsible panels
+- Chat history persistence per lesson
+
+### 8. Daily Activity & Homework Management
+**Description**: Students can upload daily activity PDFs and view homework assignments in a calendar format.
+
+**User Stories**:
+- As a student, I can upload my daily activity PDF received via email
+- As a student, I can view homework assignments in a calendar layout
+- As a student, I can mark homework as completed in my personal calendar
+- As a student, I can see homework shared across my grade level
+- As a student, I can view homework details and submission dates
+
+**Technical Requirements**:
+- PDF upload and parsing using Gemini Flash
+- Homework extraction from structured tables (Subject, Description, Date)
+- Calendar view with assignment visualization
+- Individual completion tracking
+- Grade-level homework sharing
+- Assignment notifications and reminders
 **Description**: Admin-managed content hierarchy with student grade-based access.
 
 **User Stories**:
@@ -142,7 +174,11 @@ Deliver a functional learning platform that demonstrates core AI-powered educati
   "zustand": "^4.4.1",
   "react-pdf": "^7.3.3",
   "pdf-lib": "^1.17.1",
-  "react-hook-form": "^7.45.4"
+  "react-hook-form": "^7.45.4",
+  "react-big-calendar": "^1.8.2",
+  "react-split-pane": "^2.0.3",
+  "@react-pdf-viewer/core": "^3.12.0",
+  "@react-pdf-viewer/default-layout": "^3.12.0"
 }
 ```
 
@@ -318,6 +354,37 @@ import { initializeApp } from 'firebase/app';
 }
 ```
 
+**Homework Collection**: `homework/{homeworkId}`
+```javascript
+{
+  grade: number,
+  uploadedBy: string, // student who uploaded daily activity PDF
+  parsedDate: timestamp, // when PDF was processed
+  assignments: [{
+    subject: string,
+    description: string,
+    submissionDate: timestamp,
+    originalText: string // raw extracted text
+  }],
+  sourceFileName: string,
+  storageUrl: string,
+  isActive: boolean,
+  createdAt: timestamp
+}
+```
+
+**Student Homework Progress**: `studentHomework/{userId_homeworkId}`
+```javascript
+{
+  userId: string,
+  homeworkId: string,
+  assignmentIndex: number, // which assignment in the homework array
+  completed: boolean,
+  completedAt?: timestamp,
+  notes?: string
+}
+```
+
 ### Infrastructure & Deployment
 **Frontend**: **Firebase Hosting**
 - **Authentication**: Firebase Auth
@@ -419,6 +486,7 @@ Grade (8, 9, 10, 11, 12)
 - Simple Q&A generation
 - Basic content queries
 - **PDF Worksheet Parsing** (Gemini Flash)
+- **Daily Activity PDF Parsing** (Homework extraction)
 
 **Backend REST API** (Semantic Search Only):
 ```
@@ -433,6 +501,190 @@ GET /api/admin/processing-status/{doc_id}
 ```
 
 ## 🔄 RAG Implementation
+
+### Chat with Lesson Content
+```javascript
+// Student Chat Interface with Split View
+const LessonChatInterface = ({ lessonId }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [lessonFiles, setLessonFiles] = useState([]);
+  
+  const sendMessage = async (message) => {
+    // Add user message
+    setMessages(prev => [...prev, { content: message, isUser: true, timestamp: new Date() }]);
+    
+    // Get lesson context
+    const lessonContext = selectedFile ? await extractTextFromPDF(selectedFile.storageUrl) : '';
+    
+    const prompt = `Based on this lesson content, please answer the student's question:
+    
+    Lesson Content: ${lessonContext}
+    
+    Student Question: ${message}
+    
+    Please provide a helpful, educational answer that relates to the lesson material.`;
+    
+    const model = getGenerativeModel(vertexAI, { model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    
+    // Add AI response
+    setMessages(prev => [...prev, { 
+      content: result.response.text(), 
+      isUser: false, 
+      timestamp: new Date() 
+    }]);
+  };
+  
+  return (
+    <div className="lesson-chat-container">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex h-screen">
+        <SplitPane split="vertical" minSize={300} defaultSize="50%">
+          <div className="lesson-content">
+            <FileSelector 
+              files={lessonFiles} 
+              selectedFile={selectedFile}
+              onFileSelect={setSelectedFile}
+            />
+            <PDFViewer file={selectedFile} />
+          </div>
+          <div className="chat-panel">
+            <ChatMessages messages={messages} />
+            <ChatInput onSendMessage={sendMessage} />
+          </div>
+        </SplitPane>
+      </div>
+      
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <div className="flex flex-col h-screen">
+          <div className="tabs">
+            <button onClick={() => setActiveTab('content')}>Lesson</button>
+            <button onClick={() => setActiveTab('chat')}>Chat</button>
+          </div>
+          {activeTab === 'content' ? (
+            <div className="flex-1">
+              <FileSelector files={lessonFiles} onFileSelect={setSelectedFile} />
+              <PDFViewer file={selectedFile} />
+            </div>
+          ) : (
+            <div className="flex-1">
+              <ChatMessages messages={messages} />
+              <ChatInput onSendMessage={sendMessage} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// PDF Viewer Component
+const PDFViewer = ({ file }) => {
+  if (!file) return <div className="flex items-center justify-center h-full text-gray-500">Select a lesson file to view</div>;
+  
+  return (
+    <div className="pdf-viewer h-full">
+      <Worker workerSrc="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+        <Viewer fileUrl={file.storageUrl} />
+      </Worker>
+    </div>
+  );
+};
+```
+
+### Chat with Lesson Content
+```javascript
+// Student Chat Interface with Split View
+const LessonChatInterface = ({ lessonId }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [lessonFiles, setLessonFiles] = useState([]);
+  
+  const sendMessage = async (message) => {
+    // Add user message
+    setMessages(prev => [...prev, { content: message, isUser: true, timestamp: new Date() }]);
+    
+    // Get lesson context
+    const lessonContext = selectedFile ? await extractTextFromPDF(selectedFile.storageUrl) : '';
+    
+    const prompt = `Based on this lesson content, please answer the student's question:
+    
+    Lesson Content: ${lessonContext}
+    
+    Student Question: ${message}
+    
+    Please provide a helpful, educational answer that relates to the lesson material.`;
+    
+    const model = getGenerativeModel(vertexAI, { model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    
+    // Add AI response
+    setMessages(prev => [...prev, { 
+      content: result.response.text(), 
+      isUser: false, 
+      timestamp: new Date() 
+    }]);
+  };
+  
+  return (
+    <div className="lesson-chat-container">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex h-screen">
+        <SplitPane split="vertical" minSize={300} defaultSize="50%">
+          <div className="lesson-content">
+            <FileSelector 
+              files={lessonFiles} 
+              selectedFile={selectedFile}
+              onFileSelect={setSelectedFile}
+            />
+            <PDFViewer file={selectedFile} />
+          </div>
+          <div className="chat-panel">
+            <ChatMessages messages={messages} />
+            <ChatInput onSendMessage={sendMessage} />
+          </div>
+        </SplitPane>
+      </div>
+      
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <div className="flex flex-col h-screen">
+          <div className="tabs">
+            <button onClick={() => setActiveTab('content')}>Lesson</button>
+            <button onClick={() => setActiveTab('chat')}>Chat</button>
+          </div>
+          {activeTab === 'content' ? (
+            <div className="flex-1">
+              <FileSelector files={lessonFiles} onFileSelect={setSelectedFile} />
+              <PDFViewer file={selectedFile} />
+            </div>
+          ) : (
+            <div className="flex-1">
+              <ChatMessages messages={messages} />
+              <ChatInput onSendMessage={sendMessage} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// PDF Viewer Component
+const PDFViewer = ({ file }) => {
+  if (!file) return <div className="flex items-center justify-center h-full text-gray-500">Select a lesson file to view</div>;
+  
+  return (
+    <div className="pdf-viewer h-full">
+      <Worker workerSrc="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+        <Viewer fileUrl={file.storageUrl} />
+      </Worker>
+    </div>
+  );
+};
+```
 
 ### Manual Question Creation
 1. **Select Lesson**: Teacher chooses lesson from hierarchy
@@ -615,6 +867,136 @@ const QuestionReviewComponent = ({ parsedQuestions, onSave }) => {
 };
 ```
 
+### Daily Activity PDF Parsing for Homework
+```javascript
+// Frontend - Daily Activity PDF Parsing
+const parseDailyActivity = async (pdfFile) => {
+  const pdfContent = await extractTextFromPDF(pdfFile);
+  
+  const prompt = `Parse this daily activity/homework PDF and extract assignments in this JSON format:
+  {
+    "assignments": [
+      {
+        "subject": "Mathematics",
+        "description": "Complete exercises 1-10 from Chapter 5",
+        "submissionDate": "2024-12-15",
+        "originalText": "Math: Ch5 Ex 1-10 Due: 15/12/24"
+      }
+    ]
+  }
+  
+  Look for table format with columns like: Subject | Homework Description | Date of Submission
+  Extract dates in YYYY-MM-DD format. Handle various date formats (DD/MM/YY, DD-MM-YYYY, etc.)
+  
+  PDF Content: ${pdfContent}`;
+  
+  const result = await model.generateContent(prompt);
+  return JSON.parse(result.response.text());
+};
+
+// Homework Calendar Component
+const HomeworkCalendar = () => {
+  const [homework, setHomework] = useState([]);
+  const [studentProgress, setStudentProgress] = useState({});
+  const { currentUser } = useAuth();
+  
+  useEffect(() => {
+    // Load homework for student's grade
+    const loadHomework = async () => {
+      const user = await getDoc(doc(db, 'users', currentUser.uid));
+      const userGrade = user.data().grade;
+      
+      const q = query(
+        collection(db, 'homework'),
+        where('grade', '==', userGrade),
+        where('isActive', '==', true)
+      );
+      const snapshot = await getDocs(q);
+      const homeworkData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setHomework(homeworkData);
+      
+      // Load student's progress
+      const progressQuery = query(
+        collection(db, 'studentHomework'),
+        where('userId', '==', currentUser.uid)
+      );
+      const progressSnapshot = await getDocs(progressQuery);
+      const progress = {};
+      progressSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        progress[`${data.homeworkId}_${data.assignmentIndex}`] = data;
+      });
+      setStudentProgress(progress);
+    };
+    
+    loadHomework();
+  }, [currentUser]);
+  
+  const toggleHomeworkCompletion = async (homeworkId, assignmentIndex) => {
+    const progressKey = `${homeworkId}_${assignmentIndex}`;
+    const currentStatus = studentProgress[progressKey]?.completed || false;
+    
+    const progressRef = doc(db, 'studentHomework', `${currentUser.uid}_${homeworkId}_${assignmentIndex}`);
+    await setDoc(progressRef, {
+      userId: currentUser.uid,
+      homeworkId,
+      assignmentIndex,
+      completed: !currentStatus,
+      completedAt: !currentStatus ? serverTimestamp() : null
+    }, { merge: true });
+    
+    // Update local state
+    setStudentProgress(prev => ({
+      ...prev,
+      [progressKey]: {
+        ...prev[progressKey],
+        completed: !currentStatus,
+        completedAt: !currentStatus ? new Date() : null
+      }
+    }));
+  };
+  
+  // Convert homework to calendar events
+  const calendarEvents = homework.flatMap(hw => 
+    hw.assignments.map((assignment, index) => ({
+      id: `${hw.id}_${index}`,
+      title: `${assignment.subject}: ${assignment.description}`,
+      start: assignment.submissionDate.toDate(),
+      end: assignment.submissionDate.toDate(),
+      resource: {
+        homeworkId: hw.id,
+        assignmentIndex: index,
+        completed: studentProgress[`${hw.id}_${index}`]?.completed || false
+      }
+    }))
+  );
+  
+  return (
+    <div className="homework-calendar">
+      <Calendar
+        localizer={momentLocalizer(moment)}
+        events={calendarEvents}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        eventPropGetter={(event) => ({
+          className: event.resource.completed ? 'completed-homework' : 'pending-homework'
+        })}
+        onSelectEvent={(event) => {
+          toggleHomeworkCompletion(
+            event.resource.homeworkId,
+            event.resource.assignmentIndex
+          );
+        }}
+      />
+    </div>
+  );
+};
+```
+
 ### Backend Semantic Search
 ```python
 # Backend - Semantic search endpoint
@@ -716,16 +1098,18 @@ CORS_ORIGINS=["https://cogniquest.web.app"]
 - User authentication system
 - Document upload and processing
 - Basic RAG implementation
-- Simple chat interface
+- Student chat interface with lesson viewer
+- Admin lesson management
 
-### Phase 2 (Months 2-3): AI Features
+### Phase 2 (Months 2-3): AI Features & Teacher Tools
 - Enhanced Q&A system
+- Teacher question creation and management
 - Quiz generation and taking
-- Basic worksheet generation
-- Handwriting recognition integration
+- Daily activity PDF parsing
+- Homework calendar system
 
 ### Phase 3 (Month 3-4): Polish & Deploy
-- UI/UX improvements
+- Mobile responsive optimizations
 - Performance optimization
 - Testing and bug fixes
 - Production deployment
