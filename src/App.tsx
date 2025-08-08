@@ -21,7 +21,7 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }) => {
   const { user, role, loading } = useAuthUser();
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading…</div>;
-  if (!user || !role) return <LoginPage onLogin={() => window.location.reload()} />;
+  if (!user || !role) return <LoginPage />;
   return children;
 };
 
@@ -35,6 +35,7 @@ const App = () => (
           <Header />
           <Routes>
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/learn" element={<ProtectedRoute><LessonChat /></ProtectedRoute>} />
             <Route path="/handwriting" element={<ProtectedRoute><Handwriting /></ProtectedRoute>} />
             <Route path="/teacher/questions" element={<ProtectedRoute><TeacherQuestions /></ProtectedRoute>} />

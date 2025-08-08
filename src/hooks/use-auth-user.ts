@@ -9,7 +9,26 @@ export function useAuthUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // First, handle redirect result (for signInWithRedirect)
+
+    getRedirectResult(auth)
+      .then(async (result) => {
+        console.log("[useAuthUser] getRedirectResult result:", result);
+        if (result && result.user) {
+          setUser(result.user);
+          const userDoc = await getDoc(doc(db, "users", result.user.uid));
+          setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
+        }
+      })
+      .catch((error) => {
+        console.error("[useAuthUser] Error getting redirect result", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("[useAuthUser] onAuthStateChanged user:", firebaseUser);
       if (firebaseUser) {
         setUser(firebaseUser);
         // Fetch role from Firestore
@@ -21,24 +40,6 @@ export function useAuthUser() {
       }
       setLoading(false);
     });
-
-    // Handle redirect result
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result) {
-          const firebaseUser = result.user;
-          setUser(firebaseUser);
-          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
-        }
-      })
-      .catch((error) => {
-        console.error("Error getting redirect result", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-
     return unsubscribe;
   }, []);
 
