@@ -29,14 +29,6 @@ const LoginPage = () => {
 
   return (
     <>
-      {/* Top-level test button for overlay/layout debugging */}
-      <button
-        type="button"
-        style={{ position: 'fixed', top: 10, left: 10, zIndex: 9999, padding: 12, background: '#ff0', border: '2px solid #000' }}
-        onClick={() => console.log('Top-level test button clicked')}
-      >
-        Top Test Button
-      </button>
       <main className="min-h-[calc(100vh-4rem)] flex items-center bg-background">
         <Seo
           title="AI Learning Platform"
@@ -64,14 +56,6 @@ const LoginPage = () => {
                 {loading ? "Signing in..." : "Login with Google"}
               </Button>
             </div>
-            {/* Test button to debug click handler */}
-            <button
-              type="button"
-              style={{ marginTop: 16, padding: 12, background: '#eee', border: '1px solid #ccc' }}
-              onClick={() => console.log('Test button clicked')}
-            >
-              Test Plain Button
-            </button>
             {error && <p className="text-red-500 mt-4">{error}</p>}
             <p className="sr-only">AI chat, worksheets, quizzes, handwriting input</p>
           </section>
