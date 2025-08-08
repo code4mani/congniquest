@@ -19,4 +19,19 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1500, // Increase warning limit to 1.5MB
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          pdfjs: [
+            "pdfjs-dist",
+            "@react-pdf-viewer/core",
+            "@react-pdf-viewer/default-layout"
+          ],
+        },
+      },
+    },
+  },
 }));
