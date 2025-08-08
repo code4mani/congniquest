@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, getRedirectResult } from "firebase/auth";
 import { auth, db } from "../firebase.config";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -21,6 +21,24 @@ export function useAuthUser() {
       }
       setLoading(false);
     });
+
+    // Handle redirect result
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          const firebaseUser = result.user;
+          setUser(firebaseUser);
+          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+          setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting redirect result", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
     return unsubscribe;
   }, []);
 

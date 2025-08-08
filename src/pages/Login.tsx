@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { auth, db } from "../firebase.config";
 import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
@@ -13,18 +13,9 @@ export default function LoginPage({ onLogin }) {
     setError("");
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      // Fetch user role from Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      let role = "student";
-      if (userDoc.exists()) {
-        role = userDoc.data().role || "student";
-      }
-      onLogin({ user, role });
+      await signInWithRedirect(auth, provider);
     } catch (err) {
       setError("Google sign-in failed. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
