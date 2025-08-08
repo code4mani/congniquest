@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "../firebase.config";
 import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
@@ -13,7 +13,7 @@ export default function LoginPage({ onLogin }) {
     setError("");
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
+      await signInWithPopup(auth, provider);
     } catch (err) {
       setError("Google sign-in failed. Please try again.");
       setLoading(false);
