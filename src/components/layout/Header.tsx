@@ -15,20 +15,7 @@ export function Header() {
           <span className="font-semibold">CogniQuest</span>
         </NavLink>
 
-        <nav className="hidden md:flex items-center gap-6">
-          <NavLink to="/learn" className={navLink} end>
-            Learn
-          </NavLink>
-          <NavLink to="/teacher/questions" className={navLink}>
-            Teacher Tools
-          </NavLink>
-          <NavLink to="/homework" className={navLink}>
-            Homework
-          </NavLink>
-          <NavLink to="/handwriting" className={navLink}>
-            Handwriting
-          </NavLink>
-        </nav>
+  {/* Top navigation menu removed as requested */}
 
   {/* Removed 'Get started' button from navigation */}
       </div>
