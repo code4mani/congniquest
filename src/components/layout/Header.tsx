@@ -30,11 +30,7 @@ export function Header() {
           </NavLink>
         </nav>
 
-        <div className="flex items-center gap-2">
-          <NavLink to="/learn">
-            <Button variant="hero" size="lg">Get started</Button>
-          </NavLink>
-        </div>
+  {/* Removed 'Get started' button from navigation */}
       </div>
     </header>
   );
