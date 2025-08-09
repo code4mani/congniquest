@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, getRedirectResult } from "firebase/auth";
 import { auth, db } from "../firebase.config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export function useAuthUser() {
   const [user, setUser] = useState(null);
@@ -14,6 +14,14 @@ export function useAuthUser() {
       .then(async (result) => {
         if (result && result.user) {
           setUser(result.user);
+          // Insert or update user doc in Firestore
+          await setDoc(doc(db, "users", result.user.uid), {
+            email: result.user.email,
+            displayName: result.user.displayName,
+            allowed: true, // Default to true, or set your logic
+            role: "student", // Default to student, or set your logic
+            createdAt: new Date()
+          }, { merge: true });
           const userDoc = await getDoc(doc(db, "users", result.user.uid));
           setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
           // After login, redirect to intended page if present
@@ -34,6 +42,14 @@ export function useAuthUser() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        // Insert or update user doc in Firestore
+        await setDoc(doc(db, "users", firebaseUser.uid), {
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          allowed: true, // Default to true, or set your logic
+          role: "student", // Default to student, or set your logic
+          createdAt: new Date()
+        }, { merge: true });
         // Fetch role from Firestore
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");

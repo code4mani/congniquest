@@ -1,4 +1,3 @@
-
 # CogniQuest MVP Development Checklist
 
 ## 1. AI-Powered Q&A System
@@ -82,6 +81,27 @@
 - [ ] Handwriting practice shortcut
 - [ ] Resources/links section
 - [ ] Firestore data structure for tracking progress and leaderboard
+- [ ] Responsive/mobile-friendly design
+## 13. Learn (Lessons) Page
+- [ ] Hierarchical navigation: Grade → Subject → Sub-subject → Lesson (auto-select grade from profile)
+- [ ] Lesson PDF viewer with split-screen chat window
+- [ ] Predefined chat prompts (Summarize, Explain, List formulas, etc.)
+- [ ] Free-form AI chat about lesson content
+- [ ] QnA Tab: Browse, ask, and answer questions (fill-in-the-blank, MCQ, short/long answer)
+- [ ] Import worksheet (PDF) and parse to editable JSON
+- [ ] JSON review/edit UI for parsed questions
+- [ ] Submit reviewed questions to database and list under QnA
+- [ ] AI answer generation for QnA
+- [ ] Upvote/like answers, filter/sort QnA
+- [ ] Bookmark/favorite lessons
+- [ ] Progress tracking for lessons (completed/in-progress)
+- [ ] Notes section per lesson
+- [ ] Related resources (links, worksheets, videos)
+- [ ] Teacher’s corner (notes, tips, announcements)
+- [ ] Peer discussion/comments per lesson
+- [ ] Quiz/practice quick access
+- [ ] Handwriting input for answers/notes (if relevant)
+- [ ] Download/print lesson PDF
 - [ ] Responsive/mobile-friendly design
 
 ---

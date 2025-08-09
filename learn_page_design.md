@@ -23,6 +23,9 @@ The Learn (or Lessons) page is the core interactive learning space for students.
 ### 3. QnA Tab
 - **Browse Q&A**: View questions/answers from other students
 - **Ask a Question**: Post new questions (fill-in-the-blank, MCQ, short/long answer)
+- **Import Worksheet (PDF)**: Upload a worksheet PDF; content is parsed and displayed as editable JSON for review
+- **JSON Review/Edit**: Students can review and edit the parsed questions in JSON format
+- **Submit Questions**: After review, submit to store each question in the database and list under the questions list
 - **AI Answers**: Generate answers using AI
 - **Upvote/Like**: Upvote helpful answers
 - **Filter/Sort**: By recent, upvoted, unanswered, etc.
