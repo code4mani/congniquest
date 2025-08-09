@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -18,10 +18,15 @@ import { useAuthUser } from "./hooks/use-auth-user";
 const queryClient = new QueryClient();
 
 
+
 const ProtectedRoute = ({ children }) => {
   const { user, role, loading } = useAuthUser();
+  const location = useLocation();
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading…</div>;
-  if (!user || !role) return <LoginPage />;
+  if (!user || !role) {
+    // Redirect to login with intended destination
+    return <LoginPage redirectTo={location.pathname + location.search} />;
+  }
   return children;
 };
 
@@ -35,7 +40,7 @@ const App = () => (
           <Header />
           <Routes>
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage redirectTo="" />} />
             <Route path="/learn" element={<ProtectedRoute><LessonChat /></ProtectedRoute>} />
             <Route path="/handwriting" element={<ProtectedRoute><Handwriting /></ProtectedRoute>} />
             <Route path="/teacher/questions" element={<ProtectedRoute><TeacherQuestions /></ProtectedRoute>} />

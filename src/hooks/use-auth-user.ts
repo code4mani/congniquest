@@ -10,14 +10,18 @@ export function useAuthUser() {
 
   useEffect(() => {
     // First, handle redirect result (for signInWithRedirect)
-
     getRedirectResult(auth)
       .then(async (result) => {
-        console.log("[useAuthUser] getRedirectResult result:", result);
         if (result && result.user) {
           setUser(result.user);
           const userDoc = await getDoc(doc(db, "users", result.user.uid));
           setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
+          // After login, redirect to intended page if present
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectTo = urlParams.get("redirectTo");
+          if (redirectTo) {
+            window.history.replaceState({}, '', redirectTo);
+          }
         }
       })
       .catch((error) => {
@@ -28,7 +32,6 @@ export function useAuthUser() {
       });
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("[useAuthUser] onAuthStateChanged user:", firebaseUser);
       if (firebaseUser) {
         setUser(firebaseUser);
         // Fetch role from Firestore

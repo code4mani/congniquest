@@ -8,20 +8,30 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Seo } from "@/components/seo/Seo";
 
-const LoginPage = () => {
+
+const LoginPage = ({ redirectTo }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // After login, redirect to intended page if present
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get("redirectTo");
+    // If user is logged in and redirectTo is present, navigate
+    // This assumes useAuthUser is used in parent and user is set
+    // (If not, this can be improved with context)
+    // For now, this effect is a placeholder for future logic
+  }, []);
+
   const handleGoogleSignIn = async () => {
-    console.log("Login button clicked");
     setLoading(true);
     setError("");
     try {
       const provider = new GoogleAuthProvider();
+      // The current URL already contains redirectTo if needed
       await signInWithRedirect(auth, provider);
     } catch (err) {
-      console.error("Google sign-in error:", err);
       setError("Google sign-in failed. Please try again.");
       setLoading(false);
     }

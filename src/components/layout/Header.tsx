@@ -12,13 +12,17 @@ export function Header() {
 
   // Menu items by role
   const menu = [];
+  // Add Home/Dashboard for all roles
+  if (role === "student" || role === "admin" || role === "teacher") {
+    menu.push({ label: "Home", to: "/" });
+  }
   if (role === "admin" || role === "teacher") {
     menu.push({ label: "Teacher Tools", to: "/teacher/questions" });
   }
   if (role === "student" || role === "admin" || role === "teacher") {
     menu.push({ label: "Learn", to: "/learn" });
     menu.push({ label: "Homework", to: "/homework" });
-    menu.push({ label: "Handwriting", to: "/handwriting" });
+    // Removed Handwriting menu item
   }
 
   const handleLogout = async () => {
