@@ -14,16 +14,31 @@ export function useAuthUser() {
       .then(async (result) => {
         if (result && result.user) {
           setUser(result.user);
-          // Insert or update user doc in Firestore
-          await setDoc(doc(db, "users", result.user.uid), {
-            email: result.user.email,
-            displayName: result.user.displayName,
-            allowed: true, // Default to true, or set your logic
-            role: "student", // Default to student, or set your logic
-            createdAt: new Date()
-          }, { merge: true });
-          const userDoc = await getDoc(doc(db, "users", result.user.uid));
-          setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
+          // Check if user doc exists
+          const userRef = doc(db, "users", result.user.uid);
+          const userDoc = await getDoc(userRef);
+          if (!userDoc.exists()) {
+            // First login: set role to student
+            console.log('[useAuthUser] First login, creating user doc with role=student', result.user.email);
+            await setDoc(userRef, {
+              email: result.user.email,
+              displayName: result.user.displayName,
+              allowed: true,
+              role: "student",
+              createdAt: new Date()
+            });
+            setRole("student");
+          } else {
+            // Returning user: update info but preserve role
+            console.log('[useAuthUser] Returning user, preserving role:', userDoc.data().role, result.user.email);
+            await setDoc(userRef, {
+              email: result.user.email,
+              displayName: result.user.displayName,
+              allowed: userDoc.data().allowed ?? true,
+              createdAt: userDoc.data().createdAt ?? new Date()
+            }, { merge: true });
+            setRole(userDoc.data().role || "student");
+          }
           // After login, redirect to intended page if present
           const urlParams = new URLSearchParams(window.location.search);
           const redirectTo = urlParams.get("redirectTo");
@@ -42,17 +57,31 @@ export function useAuthUser() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Insert or update user doc in Firestore
-        await setDoc(doc(db, "users", firebaseUser.uid), {
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          allowed: true, // Default to true, or set your logic
-          role: "student", // Default to student, or set your logic
-          createdAt: new Date()
-        }, { merge: true });
-        // Fetch role from Firestore
-        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-        setRole(userDoc.exists() ? userDoc.data().role || "student" : "student");
+        // Check if user doc exists
+        const userRef = doc(db, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+          // First login: set role to student
+          console.log('[useAuthUser] First login, creating user doc with role=student', firebaseUser.email);
+          await setDoc(userRef, {
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            allowed: true,
+            role: "student",
+            createdAt: new Date()
+          });
+          setRole("student");
+        } else {
+          // Returning user: update info but preserve role
+          console.log('[useAuthUser] Returning user, preserving role:', userDoc.data().role, firebaseUser.email);
+          await setDoc(userRef, {
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            allowed: userDoc.data().allowed ?? true,
+            createdAt: userDoc.data().createdAt ?? new Date()
+          }, { merge: true });
+          setRole(userDoc.data().role || "student");
+        }
       } else {
         setUser(null);
         setRole(null);

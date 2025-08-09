@@ -16,13 +16,18 @@ export function Header() {
   if (role === "student" || role === "admin" || role === "teacher") {
     menu.push({ label: "Home", to: "/" });
   }
-  if (role === "admin" || role === "teacher") {
-    menu.push({ label: "Teacher Tools", to: "/teacher/questions" });
+  if (role === "admin") {
+    menu.push({ label: "User Management", to: "/admin/users" });
+    menu.push({ label: "Lesson Uploads", to: "/admin/lessons" });
   }
-  if (role === "student" || role === "admin" || role === "teacher") {
+  if (role === "teacher") {
+    menu.push({ label: "Teacher Tools", to: "/teacher/questions" });
     menu.push({ label: "Learn", to: "/learn" });
     menu.push({ label: "Homework", to: "/homework" });
-    // Removed Handwriting menu item
+  }
+  if (role === "student") {
+    menu.push({ label: "Learn", to: "/learn" });
+    menu.push({ label: "Homework", to: "/homework" });
   }
 
   const handleLogout = async () => {

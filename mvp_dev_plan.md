@@ -47,19 +47,26 @@
 - [✔️] Assignment notifications and reminders (basic)
 
 ## 8. Content Hierarchy & Access Control
-- [✔️] Firebase Authentication for all user roles
-- [✔️] Firestore for user profiles and lesson metadata
-- [✔️] Firebase Storage for lesson PDFs
-- [✔️] Grade-based content filtering
-- [✔️] Lesson hierarchy: Grade → Subject → Sub-subject → Lesson
 
+### Admin-Only User & Role Management UI
+- Admin page (protected) to view all users
+- Add/edit/remove users
+- Assign roles (admin, teacher, student)
+- Set allowed status for access
+- Search/filter users by email, role, allowed
+
+### Lessons Management UI (Admin Only)
+- Upload single lesson PDF with metadata:
+	- Grade, Subject, Subsubject, Lesson Number, Lesson Title, etc.
+- List/search lessons by metadata
+- Edit lesson details
 ## 9. Infrastructure & Deployment
+### Bulk Lesson Upload (Admin Only)
+- Step 1: Upload multiple PDFs for a specific Grade-Subject-Subsubject
+- Step 2: Enter/edit Lesson Number and Lesson Title for each file in a table before confirming upload
+- Validate and confirm before saving to Firestore/Storage
 - [✔️] Firebase Hosting for frontend
 - [✔️] Firebase Auth, Firestore, Storage integration
-- [✔️] .env and config for Firebase
-- [✔️] Build and deploy scripts in package.json
-
-## 10. Code Quality & Tooling
 - [✔️] ESLint, Prettier for frontend
 - [⬜] Husky (git hooks) (not present)
 - [⬜] Frontend tests (Jest/RTL not present)
