@@ -1,38 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth, db } from "../firebase.config";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import heroImage from "@/assets/cogniquest-hero.jpg";
 import { Button } from "@/components/ui/button";
-import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
-import { auth, db } from "../firebase.config";
-import { doc, getDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { Seo } from "@/components/seo/Seo";
 
-
-const LoginPage = ({ redirectTo }) => {
+const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // After login, redirect to intended page if present
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get("redirectTo");
-    // If user is logged in and redirectTo is present, navigate
-    // This assumes useAuthUser is used in parent and user is set
-    // (If not, this can be improved with context)
-    // For now, this effect is a placeholder for future logic
-  }, []);
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError("");
     try {
       const provider = new GoogleAuthProvider();
-      // The current URL already contains redirectTo if needed
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user doc exists, create if not
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          displayName: user.displayName,
+          allowed: true,
+          role: "student", // New users default to student
+          createdAt: new Date(),
+        });
+      }
+      
+      navigate(from, { replace: true });
+
     } catch (err) {
+      console.error("Google sign-in error:", err);
       setError("Google sign-in failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

@@ -12,14 +12,12 @@ export function Header() {
 
   // Menu items by role
   const menu = [];
-  // Add Home/Dashboard for all roles
-  if (role === "student" || role === "admin" || role === "teacher") {
+  if (role === 'admin') {
+    menu.push({ label: "Dashboard", to: "/admin/dashboard" });
+  } else if (role === "student" || role === "teacher") {
     menu.push({ label: "Home", to: "/" });
   }
-  if (role === "admin") {
-    menu.push({ label: "User Management", to: "/admin/users" });
-    menu.push({ label: "Lesson Uploads", to: "/admin/lessons" });
-  }
+
   if (role === "teacher") {
     menu.push({ label: "Teacher Tools", to: "/teacher/questions" });
     menu.push({ label: "Learn", to: "/learn" });
