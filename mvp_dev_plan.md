@@ -1,3 +1,4 @@
+
 # CogniQuest MVP Development Checklist
 
 ## 1. AI-Powered Q&A System
@@ -68,6 +69,20 @@
 ## 11. Monitoring & Analytics
 - [⬜] Sentry, New Relic, or DataDog integration
 - [⬜] Google Analytics 4
+## 12. Student Dashboard
+- [ ] Dashboard UI layout (header, progress, lessons, assignments, activity, chat, leaderboard)
+- [ ] Progress bar calculation (lessons, homework, combined)
+- [ ] Weekly leaderboard (points, ranking, avatars)
+- [ ] Upcoming lessons section
+- [ ] Assignments/homework section (status, due dates)
+- [ ] Recent activity feed
+- [ ] AI chat/Ask a question integration
+- [ ] Practice/quizzes quick access
+- [ ] Announcements/notifications area
+- [ ] Handwriting practice shortcut
+- [ ] Resources/links section
+- [ ] Firestore data structure for tracking progress and leaderboard
+- [ ] Responsive/mobile-friendly design
 
 ---
 
